@@ -1,0 +1,11 @@
+aws_region       = "us-east-1"
+project_name     = "k8s-feature-demo"
+environment      = "dev"
+node_desired_size = 2
+node_min_size     = 2
+node_max_size     = 3
+# Restrict this to your jump host / office IP in CIDR form, e.g. ["1.2.3.4/32"].
+# Left open (0.0.0.0/0) by default only for demo convenience.
+cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+# S3 bucket holding project1.zip - use wind-client's transfer_bucket_name output.
+image_source_bucket = "wind-client-transfer-<account-id>-<region>"

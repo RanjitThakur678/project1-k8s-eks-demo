@@ -1,0 +1,18 @@
+# Provisions an AWS Network Load Balancer via the AWS Load Balancer Controller.
+# Use this to demo Service-level load balancing directly (bypassing Ingress).
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-demo-lb
+  namespace: k8s-demo
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  type: LoadBalancer
+  selector:
+    app: k8s-demo
+  ports:
+    - port: 80
+      targetPort: 8080

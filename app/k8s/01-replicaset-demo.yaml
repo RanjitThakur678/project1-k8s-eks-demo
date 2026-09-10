@@ -1,0 +1,45 @@
+# Standalone ReplicaSet — for teaching purposes only.
+# In practice you manage pods via a Deployment (02-deployment.yaml), which owns
+# a ReplicaSet for you and adds rolling-update/rollback support. Apply this one
+# separately to show students `kubectl get rs` / `kubectl scale rs` behavior
+# without a Deployment controller reconciling it.
+# Uses a distinct `app` label (k8s-demo-standalone) so it is never selected by
+# the k8s-demo Services — otherwise its pods would silently receive live traffic.
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: k8s-demo-rs
+  namespace: k8s-demo
+  labels:
+    app: k8s-demo-standalone
+    managed-by: replicaset-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: k8s-demo-standalone
+      managed-by: replicaset-demo
+  template:
+    metadata:
+      labels:
+        app: k8s-demo-standalone
+        managed-by: replicaset-demo
+    spec:
+      containers:
+        - name: k8s-demo
+          image: 717292229347.dkr.ecr.ap-south-1.amazonaws.com/k8s-feature-demo-dev-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName

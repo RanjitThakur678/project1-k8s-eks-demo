@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-demo
+  namespace: k8s-demo
+  labels:
+    app: k8s-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: k8s-demo
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # maxSurge: 0 avoids deadlock - t3.micro's ~4-pods-per-node ENI limit leaves
+      # zero spare capacity for an extra pod during rollout (see workflow.md notes)
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: k8s-demo
+    spec:
+      containers:
+        - name: k8s-demo
+          image: 717292229347.dkr.ecr.ap-south-1.amazonaws.com/k8s-feature-demo-dev-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: APP_VERSION
+              value: "v1"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 64Mi

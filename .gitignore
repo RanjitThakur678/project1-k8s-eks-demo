@@ -1,0 +1,25 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Secrets / credentials - never commit
+*.pem
+*.key
+.env
+*.env
+credentials
+aws_credentials*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+
+# Local build artifacts
+*.zip

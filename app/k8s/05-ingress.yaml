@@ -1,0 +1,23 @@
+# Requires the AWS Load Balancer Controller installed in the cluster
+# (see README for eksctl / helm install steps). Provisions an ALB.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-demo-ingress
+  namespace: k8s-demo
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: k8s-demo-clusterip
+                port:
+                  number: 80
