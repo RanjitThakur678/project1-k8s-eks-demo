@@ -41,8 +41,7 @@ below documents every one of them with the actual fix, not theoretical advice.
 | Frontend | [app/backend/static/](app/backend/static) | Plain HTML/CSS/JS "tour shop" UI with a live pod-identity badge — no build step, no framework. |
 | Kubernetes manifests | [app/k8s/](app/k8s) | Namespace, standalone ReplicaSet (teaching-only), Deployment, ClusterIP Service, NLB Service, ALB Ingress — numbered in apply order. |
 | Image build | [infra/codebuild.tf](infra/codebuild.tf) | AWS CodeBuild project that builds/pushes the Docker image with zero local container engine required. |
-| Windows jump host | [IAC/Terraform/terraform-devops-labs/wind-client](../../IAC/Terraform/terraform-devops-labs/wind-client) | Optional disposable EC2 Windows box, pre-loaded with the toolchain, used to test the deployed app and stage a GitHub push — not required to deploy. |
-| Command reference | [workflow.md](workflow.md) | Copy-paste sequential command list for the whole deployment. |
+
 
 ## What You'll Learn
 
@@ -54,6 +53,15 @@ below documents every one of them with the actual fix, not theoretical advice.
 - How to build and push a container image with **zero local Docker/Podman install**, using AWS CodeBuild in privileged mode.
 - Why Terraform deliberately ignores certain drift (like node group `desired_size`) via `lifecycle.ignore_changes`, and how to scale around it with the AWS CLI.
 - A concrete example of splitting responsibility between Terraform (cloud infrastructure) and `kubectl`/`helm` (cluster-internal objects) in one project.
+
+## Credentials (One-Time Setup)
+
+```bash
+aws configure
+aws sts get-caller-identity
+```
+
+All subsequent commands assume this is done — Terraform, `kubectl`, and the AWS CLI all read from the same configured credentials.
 
 ## How Infra Is Deployed
 
@@ -145,6 +153,29 @@ kubectl apply -f k8s/01-replicaset-demo.yaml && kubectl scale rs k8s-demo-rs -n 
 ```
 
 The standalone ReplicaSet's pods use `app: k8s-demo-standalone` (not `app: k8s-demo`), so the Services never route live traffic to them — its traffic stays observably separate from the real Deployment.
+
+
+## Publish to GitHub
+
+Run from this folder (`projects/project1`) — it's already its own repo root, and `.gitignore` here excludes `.terraform/`, `*.tfstate*`, `*.tfvars` (except `.example` files), `.terraform.lock.hcl`, and `*.zip`.
+
+```bash
+git init
+git add -A
+git status
+```
+
+**Check the `git status` output before committing** — confirm `infra/terraform.tfvars`, any `.terraform/`/`*.tfstate*` files, and `.terraform.lock.hcl` do **not** appear staged. Fix `.gitignore` first if they do.
+
+```bash
+git commit -m "Initial commit: Kubernetes feature demo on AWS EKS"
+git branch -M main
+gh auth login
+gh repo create <repo name> --public --source=. --remote=origin
+git push -u origin main
+```
+
+Verify on GitHub afterward that none of the excluded files made it in.
 
 ## Troubleshooting Guide (Lessons From This Build)
 
@@ -241,12 +272,6 @@ kubectl patch deployment <name> -n <ns> -p '{"spec":{"strategy":{"rollingUpdate"
 kubectl delete -f app/k8s
 kubectl get svc,ingress -n k8s-demo   # re-run until empty - avoids a stuck VPC delete
 cd infra
-terraform destroy
-```
-
-If you also stood up the Windows jump host:
-```bash
-cd ../../IAC/Terraform/terraform-devops-labs/wind-client
 terraform destroy
 ```
 
