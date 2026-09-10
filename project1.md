@@ -41,7 +41,7 @@ below documents every one of them with the actual fix, not theoretical advice.
 | Frontend | [app/backend/static/](app/backend/static) | Plain HTML/CSS/JS "tour shop" UI with a live pod-identity badge — no build step, no framework. |
 | Kubernetes manifests | [app/k8s/](app/k8s) | Namespace, standalone ReplicaSet (teaching-only), Deployment, ClusterIP Service, NLB Service, ALB Ingress — numbered in apply order. |
 | Image build | [infra/codebuild.tf](infra/codebuild.tf) | AWS CodeBuild project that builds/pushes the Docker image with zero local container engine required. |
-| Windows jump host | [IAC/Terraform/terraform-devops-labs/wind-client](../../IAC/Terraform/terraform-devops-labs/wind-client) | Optional disposable EC2 Windows box, pre-loaded with the toolchain, used to test the deployed app and stage a GitHub push — not required to deploy. |
+
 
 ## What You'll Learn
 
@@ -154,9 +154,6 @@ kubectl apply -f k8s/01-replicaset-demo.yaml && kubectl scale rs k8s-demo-rs -n 
 
 The standalone ReplicaSet's pods use `app: k8s-demo-standalone` (not `app: k8s-demo`), so the Services never route live traffic to them — its traffic stays observably separate from the real Deployment.
 
-## (Optional) Test From the Windows Jump Host
-
-Only needed if you want to browse the app from an isolated machine, or prefer running the GitHub push from there instead of locally — it's not required to deploy or build anything. Provision it from [IAC/Terraform/terraform-devops-labs/wind-client](../../IAC/Terraform/terraform-devops-labs/wind-client) (`terraform init && terraform apply`), connect via Fleet Manager or `terraform output -raw ssm_session_command`, sync the project source onto it via its S3 transfer bucket, then open the NLB/ALB URL from above in a browser.
 
 ## Publish to GitHub
 
@@ -174,7 +171,7 @@ git status
 git commit -m "Initial commit: Kubernetes feature demo on AWS EKS"
 git branch -M main
 gh auth login
-gh repo create project1-k8s-eks-demo --public --source=. --remote=origin
+gh repo create <repo name> --public --source=. --remote=origin
 git push -u origin main
 ```
 
@@ -275,12 +272,6 @@ kubectl patch deployment <name> -n <ns> -p '{"spec":{"strategy":{"rollingUpdate"
 kubectl delete -f app/k8s
 kubectl get svc,ingress -n k8s-demo   # re-run until empty - avoids a stuck VPC delete
 cd infra
-terraform destroy
-```
-
-If you also stood up the Windows jump host:
-```bash
-cd ../../IAC/Terraform/terraform-devops-labs/wind-client
 terraform destroy
 ```
 
