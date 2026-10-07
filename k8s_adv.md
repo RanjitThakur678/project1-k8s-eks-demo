@@ -1,6 +1,6 @@
 # Advanced Kubernetes — Concepts and Interview Q&A
 
-Controllers, operators, secrets with CSI drivers, zero-downtime upgrades, availability and resiliency. Read [Kubernetes.md](Kubernetes.md) first for the fundamentals.
+Controllers, operators, secrets with CSI drivers, zero-downtime upgrades, availability and resiliency. Read [kubernetes.md](kubernetes.md) first for the fundamentals.
 
 ---
 
